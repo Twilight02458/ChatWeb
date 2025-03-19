@@ -113,5 +113,49 @@ def logout():
     session.pop('username', None)
     return redirect(url_for('login'))
 
+
+@app.route('/chat_friend/<int:friend_id>' ,methods=['GET', 'POST'])
+def chat_friend(friend_id):
+    if 'loggedin' in session:
+        user_id = session['id']
+
+        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+        cursor.execute('SELECT * FROM users WHERE id = %s', (friend_id,))
+        user = cursor.fetchone()
+
+        # Lấy lịch sử tin nhắn giữa 2 user
+        cursor.execute('''
+            SELECT * FROM messages 
+            WHERE (sender_id = %s AND receiver_id = %s) 
+               OR (sender_id = %s AND receiver_id = %s) 
+            ORDER BY sent_at ASC
+        ''', (user_id, friend_id, friend_id, user_id))
+
+        messages = cursor.fetchall()
+
+        if request.method == 'POST':
+            # Validate receiver_id
+            receiver_id = friend_id
+
+            # Validate message
+            message = request.form.get('message')
+            if not message:
+                flash('Vui lòng nhập tin nhắn!')
+                return redirect(url_for('chat_friend', friend_id=friend_id))
+
+            # Insert message into the database
+            cursor = mysql.connection.cursor()
+            cursor.execute('INSERT INTO messages (sender_id, receiver_id, message) VALUES (%s, %s, %s)',
+                           (session['id'], int(receiver_id), message))
+            mysql.connection.commit()
+            flash('Tin nhắn đã được gửi!')
+
+            # Redirect to the chat page after processing the POST request
+            return redirect(url_for('chat_friend', friend_id=friend_id))
+
+        return render_template('private_chat.html', friend=user, messages=messages)
+    return redirect(url_for('login'))
+
+
 if __name__ == '__main__':
     app.run(debug=True)

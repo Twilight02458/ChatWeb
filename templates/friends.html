@@ -3,7 +3,7 @@
 <ul class="list-group">
     <h1>LIST OF ALL USERS</h1>
     {% for u in users %}
-    <li class="list-group-item">{{ u.username }}</li>
+    <a href="{{ url_for('chat_friend', friend_id=u.id) }}" class="list-group-item list-group-item-action">{{ u.username }}</a>
     {% endfor %}
 </ul>
 {% endblock %}
