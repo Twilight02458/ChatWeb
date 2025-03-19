@@ -1,10 +1,9 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
-
-</body>
-</html>
+{% extends "layout.html" %}
+{% block content %}
+<ul class="list-group">
+    <h1>LIST OF ALL USERS</h1>
+    {% for u in users %}
+    <li class="list-group-item">{{ u.username }}</li>
+    {% endfor %}
+</ul>
+{% endblock %}
