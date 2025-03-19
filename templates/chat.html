@@ -1,51 +1,54 @@
 {% extends "layout.html" %}
-{% block content %}
-<h2>Chat với bạn bè</h2>
-<div class="row">
-    <div class="col-md-4">
-        <h4>Danh sách bạn bè</h4>
-        <ul class="list-group">
-            {% for user in users %}
-            <li class="list-group-item">
-                <a href="#" onclick="setReceiver({{ user.id }}, '{{ user.username }}')">{{ user.username }}</a>
-            </li>
-            {% endfor %}
-        </ul>
-    </div>
-    <div class="col-md-8">
-        <h4>Tin nhắn</h4>
-        <div id="chat-box" class="border p-3 mb-3" style="height: 300px; overflow-y: scroll;">
-            {% for message in messages %}
-            <div class="mb-2">
-                <strong>{{ message.username }}:</strong> {{ message.message }}
-                <small class="text-muted">{{ message.sent_at }}</small>
-            </div>
-            {% endfor %}
-        </div>
-        <form method="POST" action="{{ url_for('chat') }}">
-            <input type="hidden" id="receiver_id" name="receiver_id" required>
-            <div class="input-group">
-                <input type="text" id="message" name="message" class="form-control" placeholder="Nhập tin nhắn..."
-                       required>
-                <button type="submit" class="btn btn-primary">Gửi</button>
-            </div>
-            {% with messages = get_flashed_messages() %}
-            {% if messages %}
-            <ul>
-                {% for message in messages %}
-                <li>{{ message }}</li>
-                {% endfor %}
-            </ul>
-            {% endif %}
-            {% endwith %}
 
+{% block content %}
+<div class="chat-wrapper">
+      <div class="image-container"></div>
+   <div class="friends-list">
+    <h4>Danh sách bạn bè</h4>
+
+    <!-- Ô tìm kiếm -->
+    <input type="text" id="search-friend" class="form-control" placeholder="Tìm kiếm bạn bè...">
+
+    <ul class="list-group" id="friends-container">
+        {% for user in users %}
+            <li class="friend-item" onclick="setReceiver({{ user.id }}, '{{ user.username }}')">
+                <div class="avatar"></div>
+                <span class="friend-name">{{ user.username }}</span>
+                <span class="status online"></span>
+            </li>
+        {% endfor %}
+    </ul>
+</div>
+
+
+    <!-- Hộp chat -->
+    <div class="chat-container hidden">
+        <div class="chat-header">
+            <h5 id="chat-title">Chọn một người để chat</h5>
+        </div>
+       <div id="chat-box" class="chat-box">
+    {% for message in messages %}
+        <div class="chat-message
+            {% if message.sender_id == current_user.id %}sent{% else %}received{% endif %}"
+            data-sender="{{ message.sender_id }}"
+            data-receiver="{{ message.receiver_id }}">
+            <strong>{{ message.username }}:</strong> {{ message.message }}
+            <small class="timestamp">{{ message.sent_at }}</small>
+        </div>
+    {% endfor %}
+</div>
+
+
+        <!-- Form gửi tin nhắn -->
+        <form method="POST" action="{{ url_for('chat') }}" class="chat-input">
+            <input type="hidden" id="receiver_id" name="receiver_id" required>
+            <input type="text" id="message" name="message" class="form-control" placeholder="Nhập tin nhắn..." required>
+            <button type="submit" class="send-btn"><i class="fas fa-paper-plane"></i>Gửi</button>
         </form>
     </div>
 </div>
-<script>
-    function setReceiver(receiverId, username) {
-        document.getElementById('receiver_id').value = receiverId;
-        document.getElementById('chat-box').innerHTML = `<h5>Chat với ${username}</h5>`;
-    }
-</script>
+
+
+<script src="{{ url_for('static', filename='js/chat.js') }}"></script>
+
 {% endblock %}
