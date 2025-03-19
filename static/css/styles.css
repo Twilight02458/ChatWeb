@@ -1,0 +1,286 @@
+/* Tổng thể */
+body {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    font-family: Arial, sans-serif;
+    padding-top: 56px;
+}
+
+/* Đảm bảo navbar luôn nằm trên đầu */
+.navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1050;
+    background: #343a40;
+}
+
+/* Wrapper chính của Login */
+.login-wrapper {
+    width: 90%;
+    max-width: 400px;
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+    border-radius: 15px;
+    box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+    padding: 20px;
+}
+
+/* Ảnh nền */
+.image-container {
+    position: absolute;
+    width: 100%;
+    height: 100vh;
+    top: 0;
+    left: 0;
+    z-index: -1;
+    background: url("../img/login-bg.png") no-repeat center center;
+    background-size: cover;
+}
+
+.logo img {
+    width: 80px;
+    margin-bottom: 20px;
+}
+
+h2 {
+    font-size: 24px;
+    font-weight: bold;
+    color: #333;
+}
+
+/* Form nhập liệu */
+.form-label {
+    font-weight: bold;
+    color: #555;
+}
+
+.form-control {
+    width: 100%;
+    border-radius: 10px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    margin-bottom: 10px;
+}
+
+.btn-primary {
+    border-radius: 10px;
+    transition: 0.3s;
+    background: linear-gradient(90deg, #667eea, #764ba2);
+    border: none;
+    padding: 12px;
+    font-size: 16px;
+    color: white;
+    cursor: pointer;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(90deg, #764ba2, #667eea);
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+    .login-wrapper {
+        width: 100%;
+        height: auto;
+    }
+    .image-container {
+        display: none;
+    }
+}
+
+/* CHAT BOX */
+.chat-wrapper {
+    display: flex;
+    width: 100%;
+    height: 80vh;
+    border-radius: 15px;
+    box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+}
+
+/* Danh sách bạn bè */
+.friends-list {
+    width: 30%;
+    padding: 10px;
+    background: #f7f7f7;
+    border-right: 2px solid #ddd;
+    overflow-y: auto;
+}
+
+.friends-list h4 {
+    text-align: center;
+    margin-bottom: 15px;
+    color: #333;
+    font-weight: bold;
+}
+
+.friend-item {
+    display: flex;
+    align-items: center;
+    padding: 12px;
+    border-radius: 10px;
+    background: #fff;
+    border: 1px solid #ddd;
+    margin-bottom: 10px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.friend-item:hover {
+    background: #eaeaea;
+    transform: scale(1.02);
+}
+
+.friend-item .avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 18px;
+    text-transform: uppercase;
+}
+.hidden {
+    display: none !important;
+}
+
+
+.friend-name {
+    font-weight: bold;
+    color: #333;
+}
+
+.status {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-left: auto;
+}
+
+.online {
+    background: green;
+}
+
+/* Hộp chat */
+.chat-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+    background: #fff;
+}
+
+.chat-header {
+    padding-bottom: 10px;
+    border-bottom: 2px solid #ddd;
+}
+
+.chat-header h5 {
+    margin: 0;
+    color: #333;
+    font-size: 18px;
+}
+
+/* Khung tin nhắn */
+.chat-box {
+    flex: 1;
+    height: 350px;
+    overflow-y: auto;
+    padding: 10px;
+    background: #f0f0f0;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Tin nhắn */
+.chat-message {
+    padding: 12px;
+    margin: 6px 0;
+    border-radius: 12px;
+    max-width: 70%;
+    word-wrap: break-word;
+}
+
+.sent {
+    background: #4caf50;
+    color: white;
+    align-self: flex-end;
+}
+
+.received {
+    background: #ddd;
+    color: black;
+    align-self: flex-start;
+}
+
+.timestamp {
+    font-size: 12px;
+    color: gray;
+    text-align: right;
+    margin-top: 5px;
+}
+
+/* Thanh nhập tin nhắn */
+.chat-input {
+    display: flex;
+    margin-top: 10px;
+    align-items: center;
+    margin-right:10px;
+}
+
+.chat-input .form-control {
+    flex: 1;
+    border-radius: 20px;
+    padding: 10px;
+    border: 1px solid #ccc;
+}
+
+.send-btn {
+    background: #4caf50;
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 15px;
+    margin-left: 10px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.send-btn i {
+    font-size: 20px;
+}
+
+.send-btn:hover {
+    background: #388e3c;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .chat-wrapper {
+        flex-direction: column;
+        height: auto;
+    }
+    .friends-list {
+        width: 100%;
+        border-right: none;
+    }
+    .chat-container {
+        width: 100%;
+    }
+    .chat-box {
+        height: auto;
+        max-height: 400px;
+    }
+}
