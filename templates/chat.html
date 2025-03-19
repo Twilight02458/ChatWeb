@@ -26,15 +26,21 @@
         <div class="chat-header">
             <h5 id="chat-title">Chọn một người để chat</h5>
         </div>
-       <div id="chat-box" class="chat-box">
+     <div id="chat-box" class="chat-box">
     {% for message in messages %}
         <div class="chat-message
-            {% if message.sender_id == current_user.id %}sent{% else %}received{% endif %}"
+            {% if message.sender_id == current_user.id|int %}sent{% else %}received{% endif %}"
             data-sender="{{ message.sender_id }}"
             data-receiver="{{ message.receiver_id }}">
-            <strong>{{ message.username }}:</strong> {{ message.message }}
+
+            <strong>
+                {% if message.sender_id == current_user.id|int %}Bạn{% else %}{{ message.username }}{% endif %}
+            </strong>:
+            {{ message.message }}
             <small class="timestamp">{{ message.sent_at }}</small>
         </div>
+
+
     {% endfor %}
 </div>
 
@@ -48,7 +54,11 @@
     </div>
 </div>
 
-
+<script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
 <script src="{{ url_for('static', filename='js/chat.js') }}"></script>
+
+<script>
+    const socket = io("ws://127.0.0.1:5000");  // 🟢 Kết nối đến server
+</script>
 
 {% endblock %}

@@ -202,6 +202,7 @@ h2 {
     border-radius: 10px;
     display: flex;
     flex-direction: column;
+    gap: 10px;  /* Thêm khoảng cách giữa các tin nhắn */
 }
 
 /* Tin nhắn */
@@ -211,18 +212,26 @@ h2 {
     border-radius: 12px;
     max-width: 70%;
     word-wrap: break-word;
+    display: inline-block; /* Đảm bảo tin nhắn là phần tử dòng */
+    clear: both; /* Xóa các tin nhắn trước đó để tránh việc căn trái phải bị ảnh hưởng */
 }
 
+/* Tin nhắn đã gửi */
 .sent {
     background: #4caf50;
     color: white;
-    align-self: flex-end;
+    align-self: flex-end;  /* Tin nhắn gửi căn về bên phải */
+    text-align: right; /* Căn nội dung tin nhắn */
+    border-radius: 12px 12px 0 12px; /* Đổi góc cho tin nhắn gửi */
 }
 
+/* Tin nhắn nhận */
 .received {
     background: #ddd;
     color: black;
-    align-self: flex-start;
+    align-self: flex-start;  /* Tin nhắn nhận căn về bên trái */
+    text-align: left; /* Căn nội dung tin nhắn */
+    border-radius: 12px 12px 12px 0; /* Đổi góc cho tin nhắn nhận */
 }
 
 .timestamp {
