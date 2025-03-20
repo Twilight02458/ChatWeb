@@ -12,7 +12,8 @@
     <ul class="list-group" id="friends-container">
         {% for user in users %}
             <li class="friend-item" onclick="setReceiver({{ user.id }}, '{{ user.username }}')">
-                <div class="avatar"></div>
+<!--                sửa ký tự \ thành / để hiện ảnh-->
+                <img class="avatar" src="{{ url_for('static', filename=user.avatar.replace('\\', '/')) }}" alt="Avatar">
                 <span class="friend-name">{{ user.username }}</span>
                 <span class="status online"></span>
             </li>

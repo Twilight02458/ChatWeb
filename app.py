@@ -1,5 +1,9 @@
+import os
+
 import bcrypt
 import eventlet
+from werkzeug.utils import secure_filename
+
 eventlet.monkey_patch()
 from flask import Flask, render_template, request, redirect, url_for, flash
 from flask_mysqldb import MySQL
@@ -20,7 +24,7 @@ app.config['MYSQL_HOST'] = 'localhost'
 app.config['MYSQL_USER'] = 'root'
 app.config['MYSQL_PASSWORD'] = 'Admin@123'
 app.config['MYSQL_DB'] = 'chat_app'
-
+app.config['UPLOAD_FOLDER'] = 'static/uploads'
 mysql = MySQL(app)
 
 # Cấu hình Flask-Login
@@ -71,11 +75,13 @@ def login():
             flash('Tên đăng nhập hoặc mật khẩu không đúng!')
     return render_template('login.html')
 
+
 @app.route('/register/', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST' and 'username' in request.form and 'password' in request.form:
         username = request.form['username']
         password = request.form['password']
+        avatar = request.files['avatar']
 
         cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
         cursor.execute('SELECT * FROM users WHERE username = %s', (username,))
@@ -87,7 +93,18 @@ def register():
             flash('Tên đăng nhập chỉ được chứa chữ cái và số!')
         else:
             hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
-            cursor.execute('INSERT INTO users (username, password) VALUES (%s, %s)', (username, hashed_password))
+
+            # Xử lý upload avatar
+            if avatar:
+                filename = secure_filename(avatar.filename)
+                file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                avatar.save(file_path)
+                avatar_path = os.path.join('uploads', filename)
+            else:
+                avatar_path = None
+
+            cursor.execute('INSERT INTO users (username, password, avatar) VALUES (%s, %s, %s)',
+                           (username, hashed_password, avatar_path))
             mysql.connection.commit()
             flash('Đăng ký thành công!')
             return redirect(url_for('login'))
