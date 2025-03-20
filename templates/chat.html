@@ -13,7 +13,12 @@
         {% for user in users %}
             <li class="friend-item" onclick="setReceiver({{ user.id }}, '{{ user.username }}')">
 <!--                sửa ký tự \ thành / để hiện ảnh-->
-                <img class="avatar" src="{{ url_for('static', filename=user.avatar.replace('\\', '/')) }}" alt="Avatar">
+                {% if user.avatar %}
+                <img class="avatar" src="{{ url_for('static', filename=user.avatar.replace('\\', '/')) }}" alt="">
+                {% endif %}
+                {% if not user.avatar %}
+                <div class="avatar"></div>
+                {% endif %}
                 <span class="friend-name">{{ user.username }}</span>
                 <span class="status online"></span>
             </li>
