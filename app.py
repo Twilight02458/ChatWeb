@@ -1,10 +1,14 @@
+import eventlet
+eventlet.monkey_patch()
 import os
 
 import bcrypt
-import eventlet
+
 from werkzeug.utils import secure_filename
 
-eventlet.monkey_patch()
+from config import mysql, login_manager, socketio, app
+
+
 from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
 from flask_mysqldb import MySQL
 import MySQLdb.cursors
@@ -13,27 +17,8 @@ import re
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from flask_socketio import SocketIO, emit, join_room
 
-app = Flask(__name__)
-app.secret_key = 'your_secret_key'
 
-# ⚡ Cấu hình WebSocket
-socketio = SocketIO(app, cors_allowed_origins="*", manage_session=False)
 
-# Cấu hình MySQL
-app.config['MYSQL_HOST'] = 'localhost'
-app.config['MYSQL_USER'] = 'root'
-app.config['MYSQL_PASSWORD'] = 'Admin@123'
-app.config['MYSQL_DB'] = 'chat_app'
-app.config['UPLOAD_FOLDER'] = 'static/uploads'
-mysql = MySQL(app)
-
-# Cấu hình Flask-Login
-login_manager = LoginManager()
-login_manager.init_app(app)
-login_manager.login_view = 'login'
-
-# Tạo thư mục uploads nếu chưa có
-os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
 
 class User(UserMixin):
