@@ -1,8 +1,9 @@
 import eventlet
+eventlet.monkey_patch()
 
 from utils import get_username, save_message, get_users, get_messages
 
-eventlet.monkey_patch()
+
 import os
 
 import bcrypt
