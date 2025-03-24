@@ -13,7 +13,6 @@ def save_message(sender_id, receiver_id, message):
     cursor.close()
 
 
-# Lấy danh sách người dùng (trừ chính mình)
 def get_users():
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
     cursor.execute('SELECT * FROM users WHERE id != %s', (current_user.id,))
@@ -22,7 +21,6 @@ def get_users():
     return users
 
 
-# Lấy tin nhắn giữa 2 người
 def get_messages():
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
     cursor.execute('''
@@ -36,10 +34,10 @@ def get_messages():
     cursor.close()
     return messages
 
-# Truy vấn username từ sender_id
+
 def get_username(sender_id):
-    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)  # ✅ Kết nối DB
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
     cursor.execute("SELECT username FROM users WHERE id = %s", (sender_id,))
     result = cursor.fetchone()
-    cursor.close()  # ✅ Đóng cursor
+    cursor.close()
     return result["username"] if result else "Người dùng ẩn danh"

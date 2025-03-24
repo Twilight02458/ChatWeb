@@ -1,8 +1,8 @@
 import eventlet
+
 eventlet.monkey_patch()
 
 from utils import get_username, save_message, get_users, get_messages
-
 
 import os
 
@@ -171,11 +171,8 @@ def friends():
 # Sự kiện WebSocket
 @socketio.on("connect")
 def handle_connect():
-    print(
-        f"Client connected: {current_user.is_authenticated}, User ID: {current_user.id if current_user.is_authenticated else 'Unknown'}")
     if current_user.is_authenticated:
-        join_room(str(current_user.id))  # Tham gia phòng của người dùng
-        print(f"User {current_user.id} joined room {current_user.id}")
+        join_room(str(current_user.id))
 
 
 @socketio.on("message")
@@ -185,13 +182,11 @@ def handle_message(data):
     message_text = data.get("message")
 
     if not receiver_id or not message_text.strip():
-        print("🚫 Lỗi: Không có người nhận hoặc tin nhắn rỗng")
+        print("Lỗi: Không có người nhận hoặc tin nhắn rỗng")
         return
 
-    # Lấy username từ sender_id
     username = get_username(sender_id)
 
-    # Lưu tin nhắn vào database
     save_message(sender_id, receiver_id, message_text)
 
     if message_text.startswith("[File] ") and not data.get("resend", False):
@@ -210,12 +205,7 @@ def handle_message(data):
             "message": message_text,
         }
 
-    # Gửi tin nhắn đến người nhận
     emit("message", emit_data, room=str(receiver_id))
-
-    # Chỉ gửi lại tin nhắn cho sender nếu sender khác receiver (tránh lặp)
-    if sender_id != receiver_id:
-        emit("message", emit_data, room=str(sender_id))
 
 
 if __name__ == '__main__':

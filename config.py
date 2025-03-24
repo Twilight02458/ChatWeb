@@ -4,14 +4,18 @@ from flask import app, Flask
 from flask_login import LoginManager
 from flask_mysqldb import MySQL
 from flask_socketio import SocketIO
+
 app = Flask(__name__)
-app.secret_key = 'your_secret_key'
+app.secret_key = '6486983efiugfudgifoiyuyydeyf'
 
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'pdf', 'txt', 'mp4', 'mp3', 'zip'}
 
+
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
 # ⚡ Cấu hình WebSocket
 socketio = SocketIO(app, cors_allowed_origins="*", manage_session=False)
 
