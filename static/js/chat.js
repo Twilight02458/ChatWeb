@@ -140,21 +140,46 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 });
 
-// Xử lý gửi tin nhắn
 document.querySelector(".chat-input").addEventListener("submit", function (e) {
     e.preventDefault();
+
     let messageInput = document.getElementById("message");
     let receiverId = document.getElementById("receiver_id").value;
+    let fileInput = document.getElementById("fileInput").files[0];
 
-    if (messageInput.value.trim() !== "") {
-        // Gửi tin nhắn qua WebSocket
+    if (fileInput) {
+        let formData = new FormData();
+        formData.append("file", fileInput);
+        formData.append("receiver_id", receiverId);
+
+        fetch("/upload", { method: "POST", body: formData })
+            .then(response => response.json())
+            .then(data => {
+                if (data.file_url) {
+                    socket.emit("message", {
+                        sender_id: currentUserId,
+                        receiver_id: receiverId,
+                        message: `[File] ${data.file_url}`
+                    });
+
+                    appendMessage({
+                        sender_id: currentUserId,
+                        receiver_id: receiverId,
+                        username: "Bạn",
+                        message: `[File] <a href="${data.file_url}" target="_blank">Tải xuống</a>`,
+                        sent_at: new Date().toLocaleTimeString()
+                    });
+
+                    fileInput.value = ""; // Xóa file input sau khi gửi
+                }
+            });
+    } else if (messageInput.value.trim() !== "") {
         socket.emit("message", {
             sender_id: currentUserId,
             receiver_id: receiverId,
             message: messageInput.value
         });
 
-        // Hiển thị tin nhắn ngay trên UI
         appendMessage({
             sender_id: currentUserId,
             receiver_id: receiverId,

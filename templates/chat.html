@@ -27,38 +27,49 @@
 </div>
 
 
-    <!-- Hộp chat -->
-    <div class="chat-container hidden">
-        <div class="chat-header">
-            <h5 id="chat-title">Chọn một người để chat</h5>
-        </div>
-     <div id="chat-box" class="chat-box">
-    {% for message in messages %}
+   <!-- Hộp chat -->
+<div class="chat-container hidden">
+    <div class="chat-header">
+        <h5 id="chat-title">Chọn một người để chat</h5>
+    </div>
+
+    <!-- Khu vực tin nhắn -->
+    <div id="chat-box" class="chat-box">
+        {% for message in messages %}
         <div class="chat-message
-            {% if message.sender_id == current_user.id|int %}sent{% else %}received{% endif %}"
-            data-sender="{{ message.sender_id }}"
-            data-receiver="{{ message.receiver_id }}">
+                {% if message.sender_id == current_user.id|int %}sent{% else %}received{% endif %}"
+             data-sender="{{ message.sender_id }}"
+             data-receiver="{{ message.receiver_id }}">
 
             <strong>
                 {% if message.sender_id == current_user.id|int %}Bạn{% else %}{{ message.username }}{% endif %}
             </strong>:
+
+            <!-- Kiểm tra nếu tin nhắn là file -->
+            {% if message.message.startswith("[File]") %}
+            <a href="{{ message.message[7:] }}" target="_blank" class="file-link">📂 Tải xuống tệp</a>
+            {% else %}
             {{ message.message }}
+            {% endif %}
+
             <small class="timestamp">{{ message.sent_at }}</small>
         </div>
-
-
-    {% endfor %}
-</div>
-
-
-        <!-- Form gửi tin nhắn -->
-        <form method="POST" action="{{ url_for('chat') }}" class="chat-input">
-            <input type="hidden" id="receiver_id" name="receiver_id" required>
-            <input type="text" id="message" name="message" class="form-control" placeholder="Nhập tin nhắn..." required>
-            <button type="submit" class="send-btn"><i class="fas fa-paper-plane"></i>Gửi</button>
-        </form>
+        {% endfor %}
     </div>
+
+    <!-- Form gửi tin nhắn -->
+    <form method="POST" action="{{ url_for('chat') }}" class="chat-input">
+        <input type="hidden" id="receiver_id" name="receiver_id" required>
+
+        <div class="input-group">
+            <input type="text" id="message" name="message" class="form-control" placeholder="Nhập tin nhắn...">
+            <input type="file" id="fileInput" class="form-control-file">
+            <button type="submit" class="send-btn"><i class="fas fa-paper-plane"></i> Gửi</button>
+        </div>
+    </form>
 </div>
+</div>
+
 
 <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
 <script src="{{ url_for('static', filename='js/chat.js') }}"></script>

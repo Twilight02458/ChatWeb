@@ -5,7 +5,7 @@ import eventlet
 from werkzeug.utils import secure_filename
 
 eventlet.monkey_patch()
-from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
 from flask_mysqldb import MySQL
 import MySQLdb.cursors
 import re
@@ -32,6 +32,10 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
 
+# Tạo thư mục uploads nếu chưa có
+os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+
+
 class User(UserMixin):
     def __init__(self, id, username):
         self.id = str(id)  # Flask-Login yêu cầu ID là string
@@ -47,15 +51,18 @@ class User(UserMixin):
             return User(user['id'], user['username'])
         return None
 
+
 @login_manager.user_loader
 def load_user(user_id):
     return User.get(user_id)
+
 
 @app.route("/")
 def home():
     if current_user.is_authenticated:
         return redirect(url_for('chat'))
     return redirect(url_for('login'))
+
 
 @app.route('/login/', methods=['GET', 'POST'])
 def login():
@@ -70,6 +77,7 @@ def login():
         if user and bcrypt.checkpw(password.encode('utf-8'), user['password'].encode('utf-8')):
             user_obj = User(user['id'], user['username'])
             login_user(user_obj)
+            session['loggedin'] = True
             return redirect(url_for('chat'))
         else:
             flash('Tên đăng nhập hoặc mật khẩu không đúng!')
@@ -111,11 +119,14 @@ def register():
 
     return render_template('register.html')
 
+
 @app.route('/logout/')
 @login_required
 def logout():
     logout_user()
+    session.pop('loggedin', None)
     return redirect(url_for('login'))
+
 
 # Lưu tin nhắn vào database
 def save_message(sender_id, receiver_id, message):
@@ -125,6 +136,7 @@ def save_message(sender_id, receiver_id, message):
     mysql.connection.commit()
     cursor.close()
 
+
 # Lấy danh sách người dùng (trừ chính mình)
 def get_users():
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
@@ -132,6 +144,7 @@ def get_users():
     users = cursor.fetchall()
     cursor.close()
     return users
+
 
 # Lấy tin nhắn giữa 2 người
 def get_messages():
@@ -146,6 +159,32 @@ def get_messages():
     messages = cursor.fetchall()
     cursor.close()
     return messages
+
+
+@app.route("/upload", methods=["POST"])
+@login_required
+def upload_file():
+    if "file" not in request.files:
+        return jsonify({"error": "Không có file nào được chọn"}), 400
+
+    file = request.files["file"]
+    if file.filename == "":
+        return jsonify({"error": "Tên file không hợp lệ"}), 400
+
+    filename = secure_filename(file.filename)
+    file_path = os.path.join(app.config["UPLOAD_FOLDER"], filename)
+    file.save(file_path)
+
+    # Lưu tin nhắn với file vào database
+    receiver_id = request.form.get("receiver_id")
+    if not receiver_id or not receiver_id.isdigit():
+        return jsonify({"error": "Người nhận không hợp lệ"}), 400
+
+    sender_id = current_user.id
+    save_message(sender_id, int(receiver_id), f"[File] {filename}")
+
+    return jsonify({"file_url": f"/{file_path}"}), 200
+
 
 @app.route('/chat/', methods=['GET', 'POST'])
 @login_required
@@ -170,16 +209,19 @@ def chat():
     messages = get_messages()
     return render_template('chat.html', users=users, messages=messages)
 
+
 @app.route('/friends/')
 @login_required
 def friends():
     users = get_users()
     return render_template('friends.html', users=users)
 
+
 # Sự kiện WebSocket
 @socketio.on("connect")
 def handle_connect():
-    print(f"Client connected: {current_user.is_authenticated}, User ID: {current_user.id if current_user.is_authenticated else 'Unknown'}")
+    print(
+        f"Client connected: {current_user.is_authenticated}, User ID: {current_user.id if current_user.is_authenticated else 'Unknown'}")
     if current_user.is_authenticated:
         join_room(str(current_user.id))  # Tham gia phòng của người dùng
         print(f"User {current_user.id} joined room {current_user.id}")
@@ -192,6 +234,7 @@ def get_username(sender_id):
     result = cursor.fetchone()
     cursor.close()  # ✅ Đóng cursor
     return result["username"] if result else "Người dùng ẩn danh"
+
 
 @socketio.on("message")
 def handle_message(data):
@@ -209,22 +252,28 @@ def handle_message(data):
     # Lưu tin nhắn vào database
     save_message(sender_id, receiver_id, message_text)
 
-    print(f"📨 Đang gửi tin nhắn từ {username} ({sender_id}) đến {receiver_id}: {message_text}")  # Debug 1
-
-    emit_data = {
-        "sender_id": sender_id,
-        "receiver_id": receiver_id,
-        "username": username,  # ✅ Thêm username vào dữ liệu gửi đi
-        "message": message_text
-    }
+    if message_text.startswith("[File] ") and not data.get("resend", False):
+        file_url = message_text.replace("[File] ", "")
+        emit_data = {
+            "sender_id": sender_id,
+            "receiver_id": receiver_id,
+            "username": username,
+            "message": f'<a href="{file_url}" target="_blank">📂 {file_url}</a>',
+        }
+    else:
+        emit_data = {
+            "sender_id": sender_id,
+            "receiver_id": receiver_id,
+            "username": username,
+            "message": message_text,
+        }
 
     # Gửi tin nhắn đến người nhận
     emit("message", emit_data, room=str(receiver_id))
-    print(f"✅ Đã gửi tin nhắn đến phòng {receiver_id}")  # Debug 2
 
-    # Gửi lại tin nhắn cho người gửi
-    emit("message", emit_data, room=str(sender_id))
-    print(f"✅ Đã gửi tin nhắn lại cho phòng {sender_id}")  # Debug 3
+    # Chỉ gửi lại tin nhắn cho sender nếu sender khác receiver (tránh lặp)
+    if sender_id != receiver_id:
+        emit("message", emit_data, room=str(sender_id))
 
 
 if __name__ == '__main__':
